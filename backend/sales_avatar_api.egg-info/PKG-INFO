@@ -1,0 +1,40 @@
+Metadata-Version: 2.4
+Name: sales-avatar-api
+Version: 0.1.0
+Summary: FastAPI backend for Real-Time 3D AI Sales Avatar
+Requires-Python: >=3.11
+Description-Content-Type: text/markdown
+Requires-Dist: fastapi>=0.115.0
+Requires-Dist: uvicorn[standard]>=0.32.0
+Requires-Dist: httpx>=0.27.0
+Requires-Dist: openai>=1.59.0
+Requires-Dist: pydantic>=2.10.0
+Requires-Dist: pydantic-settings>=2.6.0
+Requires-Dist: slowapi>=0.1.9
+Provides-Extra: dev
+Requires-Dist: pytest>=8.3.0; extra == "dev"
+
+# Sales Avatar API
+
+FastAPI service exposing versioned routes under `/api/v1`.
+
+## Endpoints
+
+| Method | Path | Notes |
+|--------|------|--------|
+| GET | `/api/v1/health` | Liveness |
+| POST | `/api/v1/sessions/` | Create session (`X-API-Key` if `API_KEY` env set) |
+| GET | `/api/v1/sessions/{id}` | Fetch session metadata |
+| GET | `/api/v1/sessions/{id}/scene` | Scene snapshot |
+| POST | `/api/v1/sessions/{id}/scene/apply` | Apply stub scene commands |
+| POST | `/api/v1/sessions/{id}/assist` | GPT-4o chat + tools → scene mutations (`OPENAI_API_KEY`) |
+| POST | `/api/v1/sessions/{id}/avatar/bootstrap` | Mint HeyGen / Simli session material (Phase 4; secrets stay server-side) |
+| POST | `/api/v1/ai/echo` | Stub echo (`X-API-Key` if configured) |
+
+Rotation values are interpreted by the web client as **radians** on the model pivot (`Vector3.x/y/z`). Scale is a uniform multiplier.
+
+Assist conversations are stored in-memory on each `SessionRecord` (`chat_messages`) for short-lived showroom turns—swap for durable storage when you harden auth.
+
+**Streaming avatar:** With `AVATAR_PROVIDER=auto` (default), the bootstrap route prefers HeyGen when `HEYGEN_API_KEY` is set (token mint via `https://api.heygen.com/v1/streaming.create_token`), otherwise Simli when `SIMLI_API_KEY`, `SIMLI_TOKEN_URL`, and `SIMLI_FACE_ID` are set, otherwise mock scaffolding payloads.
+
+OpenAPI: `/docs`
